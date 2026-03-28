@@ -8,7 +8,7 @@ export function Sidebar({ mobileOpen, expanded = false, children, className, ...
     <aside
       {...props}
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen w-64 -translate-x-full border-r border-[#2A2940] bg-[#1A1925] transition-[width,transform] duration-300 ease-out md:translate-x-0',
+        'fixed left-0 top-0 z-40 h-screen w-64 -translate-x-full border-r border-[#252f47] bg-[#0b1226] transition-[width,transform] duration-300 ease-out md:translate-x-0',
         mobileOpen && 'translate-x-0',
         expanded ? 'md:w-64' : 'md:w-20',
         className,
@@ -30,8 +30,8 @@ export function SidebarLink({ link, active = false, compact = false, className, 
         className={cn(
           'relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
           active
-            ? 'bg-[#6C63FF]/10 text-[#6C63FF]'
-            : 'text-[#9694A8] group-hover:text-[#E8E6F0]',
+            ? 'bg-[#6B67FD]/15 text-[#7D74FF]'
+            : 'text-[#B0B8D1] group-hover:text-[#EFF2FF]',
         )}
       >
         {link.icon}
@@ -56,8 +56,8 @@ export function SidebarLink({ link, active = false, compact = false, className, 
   const classes = cn(
     'group relative flex items-center overflow-hidden rounded-md px-3 py-2.5 transition-colors',
     active
-      ? 'border-l-2 border-[#6C63FF] bg-[#6C63FF]/10'
-      : 'border-l-2 border-transparent hover:bg-[#242336]',
+      ? 'border-l-2 border-[#7D74FF] bg-[#7D74FF]/20 text-[#fff]'
+      : 'border-l-2 border-transparent hover:bg-[#1f2755] hover:text-[#EFF2FF] text-[#B0B8D1]',
     className,
   );
 

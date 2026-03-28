@@ -1,534 +1,404 @@
 import React from 'react';
-import { Link, useNavigate, useOutletContext } from 'react-router-dom';
-import ArrowDownRight from 'lucide-react/dist/esm/icons/arrow-down-right.js';
-import ArrowUpRight from 'lucide-react/dist/esm/icons/arrow-up-right.js';
-import BadgeDollarSign from 'lucide-react/dist/esm/icons/badge-dollar-sign.js';
-import Clock3 from 'lucide-react/dist/esm/icons/clock-3.js';
-import MoveRight from 'lucide-react/dist/esm/icons/move-right.js';
-import SearchCheck from 'lucide-react/dist/esm/icons/search-check.js';
-import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check.js';
-import SlidersHorizontal from 'lucide-react/dist/esm/icons/sliders-horizontal.js';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles.js';
-import SquarePen from 'lucide-react/dist/esm/icons/square-pen.js';
-import UsersRound from 'lucide-react/dist/esm/icons/users-round.js';
-import Wallet from 'lucide-react/dist/esm/icons/wallet.js';
-import greetingLine from '@/assets/greeting-line.png';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-
-const spotlightCards = [
-  {
-    name: 'Alumni Directory',
-    tag: 'Verified profiles',
-    metric: '1,248',
-    sublabel: 'reachable mentors this week',
-    delta: '+12.8%',
-    deltaTone: 'up',
-    icon: UsersRound,
-    iconClass: 'from-[#7d74ff] to-[#4d82ff]',
-    chartPath: 'M0,74 C18,58 32,56 52,68 C71,80 86,92 102,84 C122,74 136,50 154,46 C174,42 191,54 208,38 C226,22 244,12 266,18',
-    chartGlow: '#8f7cff',
-    chip: 'Directory',
-    to: '/directory',
-  },
-  {
-    name: 'Referral Requests',
-    tag: 'Career momentum',
-    metric: '86',
-    sublabel: 'open asks waiting for alumni support',
-    delta: '+5.6%',
-    deltaTone: 'up',
-    icon: BadgeDollarSign,
-    iconClass: 'from-[#f4ba5d] to-[#e67834]',
-    chartPath: 'M0,72 C22,84 36,88 58,78 C78,68 92,46 110,42 C130,38 150,50 170,46 C188,42 210,26 228,22 C244,18 254,24 266,10',
-    chartGlow: '#f8b65e',
-    chip: 'Referrals',
-    to: '/profile/me?tab=referrals',
-  },
-  {
-    name: 'Hall of Fame',
-    tag: 'Featured legends',
-    metric: '32',
-    sublabel: 'alumni stories drawing the most attention',
-    delta: '-1.9%',
-    deltaTone: 'down',
-    icon: Sparkles,
-    iconClass: 'from-[#a24dff] to-[#6258ff]',
-    chartPath: 'M0,24 C22,22 46,34 64,50 C82,66 102,72 122,62 C142,52 158,32 176,34 C198,36 216,62 238,68 C250,72 258,70 266,74',
-    chartGlow: '#a16aff',
-    chip: 'Spotlight',
-    to: '/',
-    hash: 'hall-of-fame',
-  },
-];
-
-const statTiles = [
-  { label: 'Directory Growth', value: '+18.4%', meta: 'past 30 days', chip: '30d' },
-  { label: 'Jobs Shared', value: '412', meta: 'curated opportunities', chip: 'Live' },
-  { label: 'Reply Rate', value: '60.6%', meta: 'avg. alumni response', chip: '7d' },
-  { label: 'Referral Wins', value: '148', meta: 'students placed', chip: 'Q1' },
-];
-
-const postSuggestions = [
-  'Share a placement lesson your juniors should know before interview season.',
-  'Post a referral opening and tell the network who would be a strong fit.',
-  'Write a quick alumni update from your city chapter or recent meetup.',
-  'Ask the community for help on internships, research roles, or hiring leads.',
-];
-
-function Panel({ className, children }) {
-  return (
-    <section
-      className={cn(
-        'rounded-[30px] border border-[#22262e] bg-[#111317] shadow-[0_30px_80px_rgba(0,0,0,0.35)]',
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
-
-function ChartLine({ path, color }) {
-  return (
-    <svg viewBox="0 0 266 90" className="h-24 w-full">
-      <defs>
-        <linearGradient id={`line-${color.replace('#', '')}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={color} stopOpacity="0.1" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.9" />
-        </linearGradient>
-        <filter id={`glow-${color.replace('#', '')}`}>
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <path d="M0 58 H266" stroke="rgba(255,255,255,0.12)" strokeDasharray="4 6" />
-      <path
-        d={path}
-        fill="none"
-        stroke={`url(#line-${color.replace('#', '')})`}
-        strokeWidth="3"
-        strokeLinecap="round"
-        filter={`url(#glow-${color.replace('#', '')})`}
-      />
-      <circle cx="262" cy="18" r="3.5" fill={color} />
-    </svg>
-  );
-}
-
-function SpotlightCard({ card }) {
-  const Icon = card.icon;
-  const positive = card.deltaTone === 'up';
-  const linkTo = card.hash ? { pathname: card.to, hash: card.hash } : card.to;
-  const inner = (
-    <>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg', card.iconClass)}>
-            <Icon className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-white/35">{card.tag}</div>
-            <div className="mt-1 text-xl font-semibold text-white">{card.name}</div>
-          </div>
-        </div>
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#2b3038] bg-[#21242b] text-white/70 transition group-hover:bg-[#2a2e37] group-hover:text-white">
-          <ArrowUpRight className="h-4 w-4" />
-        </span>
-      </div>
-
-      <div className="mt-8 flex items-end justify-between gap-4">
-        <div>
-          <div className="text-[42px] font-semibold leading-none tracking-tight text-white">{card.metric}</div>
-          <div className="mt-2 text-sm text-white/45">{card.sublabel}</div>
-        </div>
-        <div
-          className={cn(
-            'inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm',
-            positive ? 'bg-[#113724] text-emerald-300' : 'bg-[#3a171f] text-rose-300',
-          )}
-        >
-          {positive ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-          {card.delta}
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-[24px] bg-[#0f1116] px-3 py-2">
-        <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-white/25">
-          <span>Signal</span>
-          <span>{card.chip}</span>
-        </div>
-        <ChartLine path={card.chartPath} color={card.chartGlow} />
-      </div>
-    </>
-  );
-
-  return (
-    <Link
-      to={linkTo}
-      className="group block rounded-[28px] border border-[#252a33] bg-[#17191f] p-5 shadow-[0_18px_48px_rgba(0,0,0,0.32)] transition hover:-translate-y-1 hover:border-[#313641] hover:bg-[#1a1d24]"
-    >
-      {inner}
-    </Link>
-  );
-}
-
-function getGreeting() {
-  const hour = new Date().getHours();
-
-  if (hour < 12) {
-    return 'Good morning';
-  }
-
-  if (hour < 18) {
-    return 'Good afternoon';
-  }
-
-  return 'Good evening';
-}
+import { MoreVertical, Play, Pause, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export function DashboardPage() {
-  const { user, profileComplete, profileProgress, completeProfile } = useOutletContext();
-  const greeting = getGreeting();
-  const [suggestionIndex, setSuggestionIndex] = React.useState(0);
-  const [postDraft, setPostDraft] = React.useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
-  React.useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setSuggestionIndex((current) => (current + 1) % postSuggestions.length);
-    }, 2400);
+  const topNavLinks = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Networking', href: '/directory' },
+    { label: 'Posts & Jobs', href: '/blog' },
+    { label: 'Hall of Fame', href: '/#hall-of-fame' },
+    { label: 'Write Article', href: '/compose' },
+    { label: 'My Requests', href: '/profile/me?tab=referrals' },
+  ];
 
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  const handleDraftRedirect = (event) => {
-    event.preventDefault();
-    navigate('/blog?tab=posts', {
-      state: {
-        draftText: postDraft.trim(),
-      },
-    });
+  const isActive = (href) => {
+    if (href === '/#hall-of-fame') {
+      return location.hash === '#hall-of-fame' || location.pathname === '/';
+    }
+    return location.pathname === href || (href.includes('?') && location.pathname + location.search === href);
   };
 
   return (
-    <div className="space-y-6">
-      <section className="-mx-4 border-y border-black bg-black px-4 py-7 md:-mx-6 md:px-6 md:py-8">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-center">
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#1a1d23] bg-[#1a1d23] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/48">
-              <Clock3 className="h-3.5 w-3.5" />
-              Welcome back
+    <div className="relative min-h-screen bg-gradient-to-br from-[#F5F5F5] via-[#F0E8DC] to-[#FFF0CA] font-sans">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_10%,rgba(255,230,148,0.45),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(255,210,90,0.28),transparent_42%)]" />
+      <div className="relative z-10">
+        {/* Top Navigation */}
+        <nav className="z-50 bg-white/40 backdrop-blur-md border-b border-white/30 sticky top-0">
+          <div className="max-w-7xl mx-auto px-8 py-3 flex items-center justify-between gap-6">
+            {/* Logo + Brand */}
+            <div className="rounded-full border border-[#2D2D2D] bg-white px-3 py-1.5 text-sm font-semibold text-[#2D2D2D] min-w-fit flex-shrink-0">
+              Alumni Sangham
             </div>
-            <div className="mt-5 max-w-4xl">
-              <div className="relative inline-block">
-                <img
-                  src={greetingLine}
-                  alt=""
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-[2%] top-[52%] z-0 w-[28rem] -translate-y-1/2 select-none opacity-95 sm:left-[4%] sm:top-[58%] sm:w-[36rem] md:left-[8%] md:top-[64%] md:w-[48rem] lg:left-[10%] lg:top-[66%] lg:w-[54rem]"
-                />
-                <h1 className="relative z-10 pr-4 text-4xl font-semibold tracking-tight text-white md:text-5xl" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  {greeting}, {user.name.split(' ')[0]}
-                </h1>
+
+            {/* Center Navigation Menu */}
+            <div className="hidden flex-1 items-center justify-center px-4 md:flex">
+              <div className="flex w-full max-w-4xl items-center justify-center gap-2 overflow-x-auto rounded-full border border-white/70 bg-white px-2 py-1 shadow-sm scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-white">
+                {topNavLinks.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => navigate(item.href)}
+                    className={`min-w-max rounded-full px-3 py-1 text-xs font-semibold transition ${isActive(item.href)
+                      ? 'bg-[#2D2D2D] text-white'
+                      : 'text-[#2D2D2D] hover:bg-white/30'
+                      }`}>
+                    {item.label}
+                  </button>
+                ))}
               </div>
-              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-white/55 md:text-base">
-                {profileComplete
-                  ? 'Your profile is complete and ready to surface across referrals, alumni discovery, and community storytelling.'
-                  : `Your profile is ${profileProgress}% complete. Finish the missing details so mentors, referral requests, and directory matches land with more trust.`}
-              </p>
+            </div>
+
+            {/* Right Icons */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <button onClick={() => navigate('/profile/me')} className="p-2 text-[#2D2D2D] hover:bg-white/30 rounded-lg transition-colors">
+                <Settings size={20} />
+              </button>
+              <button onClick={() => navigate('/notifications')} className="p-2 text-[#2D2D2D] hover:bg-white/30 rounded-lg transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </button>
+              <button onClick={() => navigate('/profile/me')} className="p-2 text-[#2D2D2D] hover:bg-white/30 rounded-lg transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="10" opacity="0.3" />
+                  <circle cx="12" cy="12" r="5" />
+                </svg>
+              </button>
             </div>
           </div>
+        </nav>
 
-          <div className="rounded-[22px] border border-[#14161a] bg-[#14161a] p-4 xl:justify-self-end">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-xs uppercase tracking-[0.24em] text-white/30">Profile status</div>
-                <div className="mt-2 text-lg font-semibold text-white">
-                  {profileComplete ? 'Profile complete' : 'Complete your profile'}
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          {/* Header Section */}
+          <div className="mb-6">
+            <h1 className="text-6xl font-semibold tracking-tight text-[#2D2D2D]">Welcome in, Nixtio</h1>
+            <p className="mt-1 text-sm tracking-wide text-[#6A6A6A]">Your workspace overview at a glance</p>
+          </div>
+
+          {/* Top Section: Progress Bars + Stats */}
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            {[
+              { label: 'Interviews', value: '15%' },
+              { label: 'Hired', value: '15%' },
+              { label: 'Project time', value: '60%' },
+              { label: 'Output', value: '10%' },
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-[#6A6A6A]">{item.label}</span>
+                <div className="min-w-[75px] rounded-full bg-white/80 px-4 py-1 text-sm font-semibold text-[#2D2D2D] shadow-sm border border-white/60 backdrop-blur-md">
+                  {item.value}
                 </div>
               </div>
-              <div className="rounded-full border border-[#20242b] bg-[#20242b] px-3 py-1 text-sm font-medium text-white/70">
-                {profileProgress}%
-              </div>
-            </div>
-
-            <div className="mt-5 h-2 rounded-full bg-[#232730]">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#cabfff] via-[#8d7bff] to-[#4d82ff]"
-                style={{ width: `${profileProgress}%` }}
-              />
-            </div>
-
-            <p className="mt-3 text-sm leading-6 text-white/45">
-              {profileComplete
-                ? 'Everything important is filled out and live.'
-                : 'Add the missing essentials so your profile lands with more trust.'}
-            </p>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              {profileComplete ? (
-                <Button asChild className="h-10 rounded-2xl border-0 bg-gradient-to-r from-[#c8bcff] to-[#8e7bff] px-4 text-sm font-semibold text-[#140f28] hover:from-[#d7d0ff] hover:to-[#a394ff]">
-                  <Link to="/profile/me">View profile</Link>
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  className="h-10 rounded-2xl border-0 bg-gradient-to-r from-[#c8bcff] to-[#8e7bff] px-4 text-sm font-semibold text-[#140f28] hover:from-[#d7d0ff] hover:to-[#a394ff]"
-                >
-                  <Link to="/profile/me" onClick={completeProfile}>
-                    Complete profile
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-[30px] border border-[#22262e] bg-[#111317] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.32)] md:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.26em] text-white/30">Community prompt</div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-[2.2rem]" style={{ fontFamily: 'Syne, sans-serif' }}>
-              Make a post
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/48">
-              Start something high-signal for the network. This opens the posts feed so you can publish from there.
-            </p>
-          </div>
-
-          <Button
-            asChild
-            variant="ghost"
-            className="h-11 rounded-2xl border border-[#2b3038] bg-[#1b1e24] px-5 text-sm text-white/75 hover:bg-[#262a32] hover:text-white"
-          >
-            <Link to="/blog?tab=posts">
-              Open posts
-              <MoveRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <form onSubmit={handleDraftRedirect} className="mt-6">
-          <div className="relative">
-            <div className="absolute -inset-1 rounded-[30px] bg-[radial-gradient(circle_at_20%_50%,rgba(117,92,255,0.28),transparent_42%),radial-gradient(circle_at_80%_50%,rgba(77,130,255,0.18),transparent_40%)] blur-xl" />
-            <div className="relative overflow-hidden rounded-[28px] border border-[#575cff] bg-[#0d0f13] p-[1px] shadow-[0_0_0_1px_rgba(87,92,255,0.28),0_0_34px_rgba(87,92,255,0.18)]">
-              <div className="rounded-[27px] bg-[#111317] px-4 py-4 md:px-5 md:py-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#1e2230] text-[#bfb7ff]">
-                    <SquarePen className="h-5 w-5" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/28">What do you want to say?</div>
-                    <div className="relative mt-3">
-                      {!postDraft ? (
-                        <p
-                          key={postSuggestions[suggestionIndex]}
-                          className="pointer-events-none absolute left-0 top-0 pr-3 text-base leading-7 text-white/38"
-                        >
-                          {postSuggestions[suggestionIndex]}
-                        </p>
-                      ) : null}
-                      <textarea
-                        value={postDraft}
-                        onChange={(event) => setPostDraft(event.target.value)}
-                        rows={3}
-                        className="min-h-[92px] w-full resize-none border-0 bg-transparent p-0 text-base leading-7 text-white placeholder:text-transparent focus:outline-none focus:ring-0"
-                        placeholder={postSuggestions[suggestionIndex]}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-col gap-3 border-t border-[#252a33] pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm text-white/42">
-                    Type here, then send to continue in the posts tab.
-                  </div>
-                  <Button
-                    type="submit"
-                    className="h-11 rounded-2xl border-0 bg-gradient-to-r from-[#c8bcff] to-[#8e7bff] px-5 text-sm font-semibold text-[#140f28] hover:from-[#d7d0ff] hover:to-[#a394ff]"
-                  >
-                    Send to posts
-                    <MoveRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      </section>
-
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#343b46] bg-[#1a1d23] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#c8beff]">
-            <Clock3 className="h-3.5 w-3.5" />
-            Recommended signals for this week
-          </div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-5xl" style={{ fontFamily: 'Syne, sans-serif' }}>
-            Network Command Center
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/50 md:text-base">
-            A curated view of alumni activity, referrals, and community momentum designed with the
-            same dramatic cadence as the reference, but grounded in your platform.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {['24H', 'Mentorship', 'Referral Flow', 'Descending'].map((label) => (
-            <button
-              key={label}
-              type="button"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[#2b3038] bg-[#1a1d23] px-4 py-2 text-sm text-white/65 transition hover:bg-[#232730] hover:text-white"
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#2b3038] bg-[#1a1d23] text-white/70 transition hover:bg-[#232730] hover:text-white"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <Panel className="p-6 md:p-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.25em] text-white/30">Live dashboard cards</div>
-              <div className="text-2xl font-semibold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                Top Community Signals
-              </div>
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#2b3038] bg-[#1a1d23] px-3 py-2 text-sm text-white/55">
-              <SearchCheck className="h-4 w-4" />
-              3 highlighted modules
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {spotlightCards.map((card) => (
-              <SpotlightCard key={card.name} card={card} />
             ))}
           </div>
-        </Panel>
 
-        <Panel className="bg-[#12141a] p-6">
-          <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#2b3038] bg-[#1a1d23] px-3 py-1 text-xs uppercase tracking-[0.22em] text-white/50">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Featured
-              </div>
-              <div className="rounded-full bg-[#b9acff] px-3 py-1 text-xs font-semibold text-[#181330]">New</div>
-            </div>
-
-            <div className="mt-10">
-              <div className="text-sm uppercase tracking-[0.28em] text-white/35">Career Orbit Panel</div>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                Move faster with the alumni network at your side
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-white/55">
-                Surface mentors, unlock referrals, and publish updates from a single control center built
-                for students and alumni alike.
-              </p>
-            </div>
-
-            <div className="mt-auto space-y-3 pt-10">
-              <Button className="h-12 w-full rounded-2xl border-0 bg-gradient-to-r from-[#c9bdff] to-[#8f7aff] text-base font-semibold text-[#160f2d] hover:from-[#d8d0ff] hover:to-[#a392ff]">
-                Connect with Alumni
-              </Button>
-              <Button
-                variant="ghost"
-                className="h-12 w-full rounded-2xl border border-[#2b3038] bg-[#1b1e24] text-base text-white/80 hover:bg-[#262a32] hover:text-white"
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Post an Opportunity
-              </Button>
-            </div>
-          </div>
-        </Panel>
-      </div>
-
-      <Panel className="overflow-hidden">
-        <div className="grid gap-6 border-b border-[#252a33] px-6 py-6 md:grid-cols-[minmax(0,1.25fr)_360px] md:px-8">
-          <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-white/30">Your active circles</div>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <h2 className="text-4xl font-semibold text-white md:text-5xl" style={{ fontFamily: 'Syne, sans-serif' }}>
-                Referral Velocity
-              </h2>
-              <div className="rounded-2xl bg-[#ff6e6e] p-3">
-                <ArrowUpRight className="h-4 w-4 text-white" />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-end gap-4">
-              <div className="text-6xl font-semibold leading-none tracking-tight text-white md:text-7xl">31.3986</div>
-              <div className="pb-2 text-white/45">
-                Average response window, hours
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button className="rounded-2xl border-0 bg-gradient-to-r from-[#c7bbff] to-[#8f79ff] px-6 text-[#160f2d] hover:from-[#d8d0ff] hover:to-[#a18fff]">
-                Upgrade
-              </Button>
-              <Button
-                variant="ghost"
-                className="rounded-2xl border border-[#2b3038] bg-[#1b1e24] px-6 text-white/80 hover:bg-[#262a32] hover:text-white"
-              >
-                View Profile
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-[#252a33] bg-[#17191f] p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs uppercase tracking-[0.22em] text-white/28">Mentorship Window</div>
-                <div className="mt-2 text-2xl font-semibold text-white">Investment Period</div>
-              </div>
-              <div className="rounded-full bg-[#20242b] px-3 py-1 text-sm text-white/65">6 Month</div>
-            </div>
-
-            <div className="mt-10 space-y-6">
-              <div className="relative h-1 rounded-full bg-[#232730]">
-                <div className="absolute left-[14%] top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-4 border-[#b8a9ff] bg-[#20193c] shadow-[0_0_20px_rgba(190,177,255,0.8)]" />
-                <div className="absolute left-[14%] top-1/2 h-1 -translate-y-1/2 rounded-full bg-gradient-to-r from-[#6f5cff] to-[#bbaeff]" style={{ width: '58%' }} />
-              </div>
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/28">
-                <span>Momentum</span>
-                <span>General</span>
-                <span>Risk</span>
-                <span>Reward</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 px-6 py-6 md:grid-cols-2 xl:grid-cols-4 md:px-8">
-          {statTiles.map((tile) => (
-            <div key={tile.label} className="rounded-[26px] border border-[#252a33] bg-[#17191f] p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm text-white/45">{tile.label}</div>
-                <div className="rounded-full bg-[#20242b] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
-                  {tile.chip}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-8 space-y-3">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-[#2D2D2D]">Interviews</span>
+                  <div className="w-24 h-8 bg-white/35 backdrop-blur rounded-full flex items-center justify-center border border-white/40">
+                    <span className="text-sm font-bold text-[#2D2D2D]">15%</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-[#2D2D2D]">Hired</span>
+                  <div className="w-24 h-8 bg-[#F5D645]/30 rounded-full flex items-center justify-center border border-[#F5D645]/50">
+                    <span className="text-sm font-bold text-[#2D2D2D]">15%</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-[#2D2D2D]">Project time</span>
+                  <div className="w-24 h-8 bg-white/35 backdrop-blur rounded-full flex items-center justify-center border border-white/40 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#2D2D2D]/20 to-transparent" style={{ width: '60%' }} />
+                    <span className="text-sm font-bold text-[#2D2D2D] relative">60%</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-[#2D2D2D]">Output</span>
+                  <div className="w-16 h-8 bg-white/35 backdrop-blur rounded-full flex items-center justify-center border border-white/40">
+                    <span className="text-sm font-bold text-[#2D2D2D]">10%</span>
+                  </div>
                 </div>
               </div>
-              <div className="mt-6 text-4xl font-semibold tracking-tight text-white">{tile.value}</div>
-              <div className="mt-2 text-sm text-white/35">{tile.meta}</div>
             </div>
-          ))}
+            <div className="col-span-3" />
+
+            {/* Stats Column */}
+            <div className="space-y-4">
+              <div className="bg-white/35 rounded-2xl p-4 shadow-sm border border-white/40 text-center">
+                <div className="text-4xl font-bold text-[#2D2D2D]">78</div>
+                <p className="text-xs font-semibold text-[#6A6A6A] mt-1">Employees</p>
+              </div>
+              <div className="bg-white/35 rounded-2xl p-4 shadow-sm border border-white/40 text-center">
+                <div className="text-4xl font-bold text-[#2D2D2D]">56</div>
+                <p className="text-xs font-semibold text-[#6A6A6A] mt-1">Hirings</p>
+              </div>
+              <div className="bg-white/35 rounded-2xl p-4 shadow-sm border border-white/40 text-center">
+                <div className="text-4xl font-bold text-[#2D2D2D]">203</div>
+                <p className="text-xs font-semibold text-[#6A6A6A] mt-1">Projects</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Grid Layout */}
+          <div className="grid grid-cols-4 gap-2">
+            {/* Left Sidebar replaced with Referral Velocity */}
+            <div className="col-span-1 space-y-2">
+              <div className="max-w-full bg-[rgba(255,255,255,0.35)] rounded-2xl p-6 shadow-sm border border-white/30">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-[#2D2D2D] text-xl">Referral Velocity</h3>
+                  <p className="text-3xl font-thin text-[#2D2D2D]">31.3986</p>
+                </div>
+                <p className="text-sm text-[#6B7280] mb-5">Average response window, hours</p>
+
+                <div className="bg-white/80 rounded-2xl p-3 mb-4 border border-[#E8E8E8]">
+                  <p className="text-2xl font-normal text-[#2D2D2D]">Investment Period</p>
+                  <div className="h-4 mt-3 w-full rounded-full bg-[#E8E8E8] overflow-hidden">
+                    <div className="h-full w-[30%] float-left bg-gradient-to-r from-[#FFB4B4] via-[#FFD54F] to-[#FFBA45]" />
+                    <div className="h-full w-[25%] float-left bg-[#2D2D2D]" />
+                    <div className="h-full w-[45%] float-left bg-[#9B9B9B]" />
+                  </div>
+                  <div className="flex justify-between text-xs font-semibold text-[#2D2D2D] mt-3">
+                    <span>Momentum</span>
+                    <span>General</span>
+                    <span>Risk</span>
+                    <span>Reward</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { label: 'Directory Growth', value: '+18.4%', note: 'past 30 days' },
+                    { label: 'Jobs Shared', value: '412', note: 'curated opportunities' },
+                    { label: 'Reply Rate', value: '60.6%', note: 'avg. alumni response' },
+                    { label: 'Referral Wins', value: '148', note: 'students placed' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-white/60 text-[#2D2D2D] rounded-xl p-3 flex justify-between items-start backdrop-blur-sm border border-white/40">
+                      <div>
+                        <p className="text-sm text-[#2D2D2D] font-semibold">{item.label}</p>
+                        <p className="text-xs text-[#6B7280] mt-1">{item.note}</p>
+                      </div>
+                      <p className="text-3xl font-thin">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Center Content */}
+            <div className="col-span-2 space-y-2">
+              {/* Progress Panel */}
+              <div className="bg-[rgba(255,255,255,0.35)] rounded-2xl p-5 shadow-sm border border-white/30">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-base font-semibold text-[#2D2D2D]">Progress</span>
+                </div>
+                {/* 6.1h + Work Time label inline */}
+                <div className="flex items-baseline gap-3 mb-4">
+                  <span className="text-4xl font-semibold text-[#2D2D2D]">6.1 h</span>
+                  <div className="text-xs text-[#9B9B9B] font-medium leading-tight">
+                    <div>Work Time</div>
+                    <div>this week</div>
+                  </div>
+                </div>
+                {/* Bar chart with 5h23m pill above active bar */}
+                <div className="relative flex items-end justify-between gap-0 pt-8" style={{ height: '120px' }}>
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => {
+                    const heights = [38, 55, 65, 72, 80, 90, 30];
+                    const isActive = i === 5;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 relative">
+                        {/* 5h 23m pill above active bar */}
+                        {isActive && (
+                          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#F5D645] text-[#2D2D2D] text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow">
+                            5h 23m
+                          </div>
+                        )}
+                        {/* Thin vertical bar */}
+                        <div
+                          className="rounded-full"
+                          style={{
+                            width: isActive ? '5px' : '4px',
+                            height: heights[i],
+                            background: isActive ? '#F5D645' : 'rgba(160,160,170,0.45)',
+                          }}
+                        />
+                        {/* Dot at bottom */}
+                        <div
+                          className="w-1 h-1 rounded-full"
+                          style={{ background: isActive ? '#F5D645' : '#BCBCC8' }}
+                        />
+                        <span className="text-[10px] font-semibold text-[#9B9B9B]">{day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time Tracker */}
+              <div className="bg-[rgba(255,255,255,0.35)] rounded-2xl p-5 shadow-sm border border-white/30 flex flex-col items-center justify-center" style={{ minHeight: '340px', maxWidth: '300px' }}>
+                <div className="flex items-center justify-between w-full mb-3">
+                  <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#F5D645] bg-[#fffce5] rounded-full">Featured</span>
+                  <MoreVertical size={20} className="text-[#9B9B9B]" />
+                </div>
+                <div className="w-full mb-3">
+                  <h3 className="text-2xl font-light text-[#2D2D2D] leading-tight">Career Orbit Panel</h3>
+                </div>
+                <div className="relative w-40 h-40 mb-5">
+                  <svg className="w-full h-full" viewBox="0 0 200 200">
+                    {/* Tick marks only on the non-yellow left/bottom arc (from ~200deg to ~340deg, i.e. left side) */}
+                    {[...Array(48)].map((_, i) => {
+                      // Full circle: 0..47 ticks. Yellow arc covers roughly -90deg to +90deg (top to bottom on right side)
+                      // = angle 270 to 90 going clockwise => in standard math: from -90 (top) clockwise to 90 (bottom)
+                      // We skip ticks that fall within the yellow semi-circle arc region (right side: -80deg to +80deg from top)
+                      const angleDeg = (i / 48) * 360 - 90; // offset so 0 = top
+                      // Yellow arc: from -80deg to +100deg (clockwise from near-top to near-bottom on right side)
+                      const inYellow = angleDeg >= -80 && angleDeg <= 100;
+                      if (inYellow) return null;
+                      const angleRad = ((angleDeg + 90) * Math.PI) / 180;
+                      const isMajor = i % 6 === 0;
+                      const r1 = isMajor ? 84 : 87;
+                      const r2 = 93;
+                      const x1 = 100 + Math.cos(angleRad) * r1;
+                      const y1 = 100 + Math.sin(angleRad) * r1;
+                      const x2 = 100 + Math.cos(angleRad) * r2;
+                      const y2 = 100 + Math.sin(angleRad) * r2;
+                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#AAAAAA" strokeWidth={isMajor ? 2 : 1} />;
+                    })}
+                    {/* Yellow semi-circle arc: right side, from top (270deg) clockwise to bottom (90deg) */}
+                    {/* SVG arc: start at top-right area (100,5) sweep clockwise 180deg to bottom-right (100,195) */}
+                    <path
+                      d="M100,14 A86,86 0 0,1 186,100 A86,86 0 0,1 100,186"
+                      fill="none"
+                      stroke="#F5D645"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3" style={{ background: 'transparent' }}>
+                    <p className="text-lg font-normal text-[#2D2D2D]">Surface faster</p>
+                    <p className="text-xs text-[#4A4A4A] leading-4">with the alumni network</p>
+                    <p className="text-xs text-[#4A4A4A] leading-4">by your side</p>
+                  </div>
+                </div>
+                <div className="w-full flex gap-3 justify-center">
+                  <button className="flex-1 max-w-[45%] py-2 rounded-lg bg-white text-[#2D2D2D] font-semibold text-sm shadow-sm">Connect</button>
+                  <button className="flex-1 max-w-[50%] py-2 rounded-lg bg-[#E5E7EB] text-[#2D2D2D] font-semibold text-sm shadow-sm">Add Opportunity</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar — Community Signal Cards */}
+            <div className="col-span-1 space-y-2">
+              {/* Section Label */}
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9B9B9B] px-1 mb-1">Live Dashboard Cards</p>
+
+              {/* Card 1 — Alumni Directory */}
+              <div className="bg-[rgba(255,255,255,0.45)] rounded-2xl p-4 shadow-sm border border-white/40 backdrop-blur-sm">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-[#7C6FF7]/20 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C6FF7" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#9B9B9B]">Verified Profiles</p>
+                      <p className="text-sm font-bold text-[#2D2D2D] leading-tight">Alumni Directory</p>
+                    </div>
+                  </div>
+                  <span className="text-[#AAAAAA] text-xs">↗</span>
+                </div>
+                <p className="text-3xl font-bold text-[#2D2D2D] mb-0.5">1,248</p>
+                <p className="text-[10px] text-[#9B9B9B] leading-tight mb-2">reachable mentors<br />this week</p>
+                <span className="inline-flex items-center gap-1 bg-[#22C55E]/15 text-[#16A34A] text-[10px] font-bold px-2 py-0.5 rounded-full">↗ +12.8%</span>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#BBBBBB] mt-3 mb-1">Signal Directory</p>
+                <svg viewBox="0 0 100 28" className="w-full" fill="none">
+                  <polyline points="0,22 15,20 28,18 40,14 55,16 70,10 85,8 100,5" stroke="#7C6FF7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7"/>
+                  <polyline points="0,26 15,25 28,22 40,19 55,21 70,17 85,14 100,11" stroke="#7C6FF7" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.25"/>
+                </svg>
+              </div>
+
+              {/* Card 2 — Referral Requests */}
+              <div className="bg-[rgba(255,255,255,0.45)] rounded-2xl p-4 shadow-sm border border-white/40 backdrop-blur-sm">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-[#F5A623]/20 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#9B9B9B]">Career Momentum</p>
+                      <p className="text-sm font-bold text-[#2D2D2D] leading-tight">Referral Requests</p>
+                    </div>
+                  </div>
+                  <span className="text-[#AAAAAA] text-xs">↗</span>
+                </div>
+                <p className="text-3xl font-bold text-[#2D2D2D] mb-0.5">86</p>
+                <p className="text-[10px] text-[#9B9B9B] leading-tight mb-2">open asks waiting<br />for alumni support</p>
+                <span className="inline-flex items-center gap-1 bg-[#22C55E]/15 text-[#16A34A] text-[10px] font-bold px-2 py-0.5 rounded-full">↗ +5.6%</span>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#BBBBBB] mt-3 mb-1">Signal Referrals</p>
+                <svg viewBox="0 0 100 28" className="w-full" fill="none">
+                  <polyline points="0,24 18,22 35,20 50,16 65,18 80,11 100,8" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.8"/>
+                  <polyline points="0,26 18,25 35,23 50,20 65,22 80,15 100,12" stroke="#F5A623" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.25"/>
+                </svg>
+              </div>
+
+              {/* Card 3 — Hall of Fame */}
+              <div className="bg-[rgba(255,255,255,0.45)] rounded-2xl p-4 shadow-sm border border-white/40 backdrop-blur-sm">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-[#9B59B6]/20 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B59B6" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#9B9B9B]">Featured Legends</p>
+                      <p className="text-sm font-bold text-[#2D2D2D] leading-tight">Hall of Fame</p>
+                    </div>
+                  </div>
+                  <span className="text-[#AAAAAA] text-xs">↗</span>
+                </div>
+                <p className="text-3xl font-bold text-[#2D2D2D] mb-0.5">32</p>
+                <p className="text-[10px] text-[#9B9B9B] leading-tight mb-2">alumni stories drawing<br />the most attention</p>
+                <span className="inline-flex items-center gap-1 bg-[#EF4444]/15 text-[#DC2626] text-[10px] font-bold px-2 py-0.5 rounded-full">↘ -1.9%</span>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#BBBBBB] mt-3 mb-1">Signal Spotlight</p>
+                <svg viewBox="0 0 100 28" className="w-full" fill="none">
+                  <polyline points="0,10 20,14 38,12 55,16 70,13 85,18 100,22" stroke="#9B59B6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7"/>
+                  <circle cx="85" cy="18" r="2" fill="#9B59B6" opacity="0.6"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Make a post panel (full-width row below grid) */}
+            <div className="col-span-4 bg-white/80 rounded-2xl p-6 border border-white/50 backdrop-blur-md text-[#1C1C1C]">
+              <p className="text-xs tracking-wide uppercase text-[#6B6B6B] mb-2">Community Prompt</p>
+              <h2 className="text-3xl font-semibold mb-2 text-[#2D2D2D]">Make a post</h2>
+              <p className="text-sm text-[#4F4F4F] mb-5">Start something high-signal for the network. This opens the posts feed so you can publish from there.</p>
+
+              <div className="bg-white/90 rounded-2xl border border-[#E9E9E9] p-4 space-y-3">
+                <div className="flex items-center gap-3 text-xs uppercase tracking-wider font-bold text-[#6B6B6B]">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F3F3] text-[#9B9B9B]">✎</span>
+                  What do you want to say?
+                </div>
+                <textarea
+                  rows={3}
+                  className="w-full rounded-xl bg-white border border-[#E3E3E3] p-3 text-sm text-[#2D2D2D] placeholder-[#A8A8A8] focus:border-[#C6C6C6] focus:outline-none"
+                  placeholder="Share a placement lesson your juniors should know before interview season."
+                />
+                <p className="text-xs text-[#8B8B8B]">Type here, then send to continue in the posts tab.</p>
+                <div className="flex justify-end">
+                  <button className="px-4 py-2 rounded-xl bg-[#f44336] text-white font-semibold hover:opacity-90 transition">Send to posts →</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </Panel>
+
+
+      </div>
     </div>
   );
 }

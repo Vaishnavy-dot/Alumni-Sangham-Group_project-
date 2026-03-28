@@ -82,14 +82,14 @@ export function SidePanel({ isDesktop, sidebarOpen, onClose, onCompose, user, on
         <div className="flex flex-1 flex-col overflow-hidden">
           {panelExpanded ? <Logo /> : <LogoIcon />}
 
-          <div className="mt-6 rounded-lg border border-[#2A2940] bg-[#0F0E17] p-4">
-            <div className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#5D5B71]">Workspace</div>
+          <div className="mt-6 rounded-lg border border-[#252f47] bg-[#111a3d] p-4">
+            <div className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#8e95b8]">Workspace</div>
             <motion.div
               animate={{ opacity: panelExpanded ? 1 : 0, height: panelExpanded ? 'auto' : 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-2 text-sm font-semibold text-[#E8E6F0]">IIT Patna alumni network</div>
-              <div className="mt-1 text-sm text-[#9694A8]">Profiles, referrals, posts, jobs, and community discovery.</div>
+              <div className="mt-2 text-sm font-semibold text-[#E9EBFF]">IIT Patna alumni network</div>
+              <div className="mt-1 text-sm text-[#9ea6c7]">Profiles, referrals, posts, jobs, and community discovery.</div>
             </motion.div>
           </div>
 
@@ -115,9 +115,9 @@ export function SidePanel({ isDesktop, sidebarOpen, onClose, onCompose, user, on
                 onClick={
                   item.action === 'compose'
                     ? () => {
-                        onCompose();
-                        onClose();
-                      }
+                      onCompose();
+                      onClose();
+                    }
                     : onClose
                 }
               />
@@ -157,7 +157,7 @@ export function SidePanel({ isDesktop, sidebarOpen, onClose, onCompose, user, on
 
           <Link
             to="/profile/me"
-            className="mx-3 mt-3 inline-flex items-center gap-2 rounded-md px-4 py-3 text-sm text-[#9694A8] transition hover:bg-[#242336] hover:text-[#E8E6F0]"
+            className="mx-3 mt-3 inline-flex items-center gap-2 rounded-md px-4 py-3 text-sm text-[#a2adce] transition hover:bg-[#1f2755] hover:text-[#EFF2FF]"
             onClick={onClose}
           >
             <Settings className="h-[18px] w-[18px] stroke-[1.5]" />
@@ -172,7 +172,7 @@ export function SidePanel({ isDesktop, sidebarOpen, onClose, onCompose, user, on
           {onLogout ? (
             <button
               type="button"
-              className="mx-3 mt-1 w-[calc(100%-1.5rem)] rounded-md px-4 py-3 text-left text-sm text-[#9694A8] transition hover:bg-[#242336] hover:text-[#E8E6F0]"
+              className="mx-3 mt-1 w-[calc(100%-1.5rem)] rounded-md px-4 py-3 text-left text-sm text-[#a2adce] transition hover:bg-[#1f2755] hover:text-[#EFF2FF]"
               onClick={() => {
                 onLogout();
                 onClose();
